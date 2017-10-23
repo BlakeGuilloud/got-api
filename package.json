@@ -1,0 +1,14 @@
+{
+  "name": "got-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:BlakeGuilloud/got-api.git",
+  "author": "Blake Guilloud <blake.guilloud@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.2",
+    "express-graphql": "^0.6.11",
+    "graphql": "^0.11.7",
+    "node-fetch": "^1.7.3"
+  }
+}
