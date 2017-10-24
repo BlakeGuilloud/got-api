@@ -1,0 +1,18 @@
+service: got-api
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+          cors: true
+      - http:
+          method: ANY
+          path: '{proxy+}'
+          cors: true
