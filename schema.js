@@ -13,6 +13,12 @@ const fetchData = url => url ? fetch(url)
 const filterNullValues = values => values
   .filter(value => !!value === true);
 
+const parseIdFromUrl = url => {
+  const splitUrl = url.split('/');
+
+  return Number(splitUrl[splitUrl.length - 1]);
+}
+
 const AliasType = new GraphQLObjectType({
   name: 'Aliases',
 
@@ -93,6 +99,10 @@ const CharacterType = new GraphQLObjectType({
   name: 'Character',
 
   fields: () => ({
+    id: {
+      type: GraphQLInt,
+      resolve: data => parseIdFromUrl(data.url),
+    },
     name: {
       type: GraphQLString,
     },
@@ -131,6 +141,14 @@ module.exports = new GraphQLSchema({
     name: 'Query',
 
     fields: () => ({
+      characters: {
+        type: new GraphQLList(CharacterType),
+        args: {
+          page: { type: GraphQLInt },
+        },
+        resolve: (root, args) =>
+          fetchData(`https://www.anapioficeandfire.com/api/characters?page=${args.page}&pageSize=1000`),
+      },
       character: {
         type: CharacterType,
         args: {
