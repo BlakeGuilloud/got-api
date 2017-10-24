@@ -7,9 +7,14 @@ const {
   GraphQLList,
 } = require('graphql');
 
+const fetchData = url => url ? fetch(url)
+  .then(response => response.json()) : null;
+
+const filterNullValues = values => values
+  .filter(value => !!value === true);
+
 const AliasType = new GraphQLObjectType({
   name: 'Aliases',
-  description: '...',
 
   fields: () => ({
     alias: {
@@ -21,7 +26,6 @@ const AliasType = new GraphQLObjectType({
 
 const TitleType = new GraphQLObjectType({
   name: 'Titles',
-  description: '...',
 
   fields: () => ({
     title: {
@@ -31,33 +35,62 @@ const TitleType = new GraphQLObjectType({
   }),
 });
 
-const FatherType = new GraphQLObjectType({
-  name: 'Father',
-  description: '...',
+const SwornMembersType = new GraphQLObjectType({
+  name: 'swornMembers',
+  fields: () => ({
+    member: {
+      type: CharacterType,
+      resolve: data => fetchData(data),
+    },
+  }),
+});
 
+const HouseType = new GraphQLObjectType({
+  name: 'House',
   fields: () => ({
     name: {
       type: GraphQLString,
-      resolve: root => fetch(root)
-        .then(response => response.json())
-        .then(data => data.name)
     },
-    gender: {
+    region: {
       type: GraphQLString,
     },
-    aliases: {
-      type: new GraphQLList(AliasType),
+    coatOfArms: {
+      type: GraphQLString,
+    },
+    founded: {
+      type: GraphQLString,
     },
     titles: {
       type: new GraphQLList(TitleType),
+      resolve: args => filterNullValues(args.titles),
+    },
+    currentLord: {
+      type: CharacterType,
+      resolve: args => fetchData(args.currentLord),
+    },
+    heir: {
+      type: CharacterType,
+      resolve: args => fetchData(args.heir),
+    },
+    swornMembers: {
+      type: new GraphQLList(SwornMembersType),
+      resolve: args => args.swornMembers,
+    }
+  }),
+})
+
+const HousesType = new GraphQLObjectType({
+  name: 'Houses',
+  fields: () => ({
+    house: {
+      type: HouseType,
+      resolve: data => fetchData(data),
     },
   }),
-
 })
 
 const CharacterType = new GraphQLObjectType({
   name: 'Character',
-  description: '...',
 
   fields: () => ({
     name: {
@@ -66,14 +99,29 @@ const CharacterType = new GraphQLObjectType({
     gender: {
       type: GraphQLString,
     },
+    allegiances: {
+      type: new GraphQLList(HousesType),
+      resolve: args => args.allegiances,
+    },
     aliases: {
       type: new GraphQLList(AliasType),
+      resolve: args => filterNullValues(args.aliases),
     },
     titles: {
       type: new GraphQLList(TitleType),
+      resolve: args => filterNullValues(args.titles),
+    },
+    spouse: {
+      type: CharacterType,
+      resolve: args => fetchData(args.spouse),
     },
     father: {
-      type: FatherType,
+      type: CharacterType,
+      resolve: args => fetchData(args.father),
+    },
+    mother: {
+      type: CharacterType,
+      resolve: args => fetchData(args.mother),
     },
   }),
 });
@@ -81,7 +129,6 @@ const CharacterType = new GraphQLObjectType({
 module.exports = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
-    description: '..',
 
     fields: () => ({
       character: {
@@ -89,9 +136,19 @@ module.exports = new GraphQLSchema({
         args: {
           id: { type: GraphQLInt }
         },
-        resolve: (root, args) => fetch(`https://www.anapioficeandfire.com/api/characters/${args.id}`)
-          .then(response => response.json())
+        resolve: (root, args) =>
+          fetchData(`https://www.anapioficeandfire.com/api/characters/${args.id}`),
       },
+      house: {
+        type: HouseType,
+        args: {
+          id: {
+            type: GraphQLInt,
+          },
+        },
+        resolve: (root, args) =>
+          fetchData(`https://www.anapioficeandfire.com/api/houses/${args.id}`),
+      }
     }),
   }),
 });
