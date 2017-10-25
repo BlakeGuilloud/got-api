@@ -16,6 +16,10 @@ app.use('/graphql', graphqlHTTP({
   graphiql: true,
 }));
 
-// app.listen(4000);
-module.exports.handler = serverless(app);
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+app.listen(4000);
+// module.exports.handler = serverless(app);
 console.log('listening');

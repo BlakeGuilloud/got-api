@@ -16,3 +16,6 @@ functions:
           method: ANY
           path: '{proxy+}'
           cors: true
+          parameters:
+            querystrings:
+              query: true
